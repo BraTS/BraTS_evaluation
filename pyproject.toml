@@ -1,0 +1,33 @@
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+
+[tool.poetry]
+name = "BraTS_evaluation"
+version = "0.0.0"               # will be overwritten by poetry-dynamic-versioning but needs to be set
+description ="Official package to compute metrics for the BraTS segmentation challenges."
+license = "AGPL-3.0"
+
+authors = [
+  "Florian Kofler <florian.kofler@tum.de>",
+  "Erik Großkopf <erik.grosskopf@uni-tuebingen.de>",
+]
+
+maintainers = [
+  "Florian Kofler <florian.kofler@tum.de>",
+  "Erik Großkopf <erik.grosskopf@uni-tuebingen.de>",
+]
+
+readme = "README.md"
+repository = "https://github.com/BrainLesion/panoptica"
+#documentation = ""
+
+[tool.poetry.dependencies]
+panoptica = ">=2.0.0"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2"
