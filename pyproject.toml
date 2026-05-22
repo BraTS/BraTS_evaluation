@@ -26,8 +26,8 @@ repository = "https://github.com/BraTS/BraTS_evaluation"
 #documentation = ""
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-panoptica = ">=2.0.0"
+python = ">=3.10"
+panoptica = ">=2.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.2"
