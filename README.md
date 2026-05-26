@@ -29,7 +29,7 @@ standardizing clinical research pipelines, and ensuring that medical image segme
 
 ## Installation
 
-To set up the evaluation environment, you need to install the required Python packages, primarily `panoptica` and `pandas`.
+To set up the evaluation environment, you need to install the required Python packages:
 
 ```bash
 # It is recommended to use a virtual environment
