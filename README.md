@@ -29,17 +29,21 @@ standardizing clinical research pipelines, and ensuring that medical image segme
 
 ## Installation
 
-You can either install the package from PyPI to use it in your own scripts, or clone this repository to run and modify the provided CLI scripts and configs directly.
-
-### Option A: Install as a package
-
 ```bash
 pip install BraTS-evaluation
 ```
 
 This installs the `brats_evaluation` Python package and exposes two console scripts: `brats-evaluate` and `brats-parse-metrics`.
 
-**Use as a library** — call the evaluator from your own Python code:
+---
+
+## Usage
+
+The evaluation pipeline runs in two steps: produce a JSON summary with `brats-evaluate`, then turn that JSON into a CSV report with `brats-parse-metrics`. Either step can also be driven from Python.
+
+### Python library
+
+Call the evaluator directly from your own Python code:
 
 ```python
 from panoptica import Panoptica_Evaluator
@@ -58,41 +62,7 @@ print(results)
 
 For a runnable, end-to-end example using the bundled sample data see [`./example/programmatic_example.py`](./example/programmatic_example.py).
 
-### Option B: Clone (If you want to modify the pipeline)
-
-Create and activate a Python environment using **either** conda **or** the built-in `venv`:
-
-```bash
-# Option B1 — conda
-conda create -n brats_eval python=3.10
-conda activate brats_eval
-```
-
-```bash
-# Option B2 — venv (no conda required)
-python3.10 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-```
-
-Then clone the repo and install with Poetry:
-
-```bash
-git clone https://github.com/BraTS/BraTS_evaluation.git
-cd BraTS_evaluation
-poetry install
-```
-
-If Poetry is not yet available, install it via **either** route:
-*   `conda install -c conda-forge poetry` (for conda users — keeps Poetry inside the env)
-*   `curl -sSL https://install.python-poetry.org | python3 -` (official standalone installer)
-
----
-
-## Usage
-
-The evaluation pipeline consists of two main steps: running the evaluation to generate a JSON summary, and parsing the JSON to create a structured CSV report.
-
-### 1. Running the Evaluation (`brats-evaluate`)
+### 1. Run the evaluation (`brats-evaluate`)
 
 This command evaluates prediction NIfTI files against reference (ground truth) NIfTI files using the Panoptica framework.
 
@@ -101,13 +71,13 @@ This command evaluates prediction NIfTI files against reference (ground truth) N
 brats-evaluate \
     --ref_path /path/to/reference/niftis/ \
     --pred_path /path/to/prediction/niftis/ \
-    --config_path brats_evaluation/configs/config_mets.yaml \
+    --config_path path/to/config_mets.yaml \
     --summary_json ./panoptica_evaluation_summary.json
 ```
 
 (Equivalent to `python -m brats_evaluation.evaluation ...` if you prefer the module form.)
 
-The bundled configs also ship inside the installed wheel; from a pip install, resolve them in Python with `config_path("mets")` (see Option A above).
+Bundled configs (`mets`, `gli`, `ped`, `MenRT`, `MenPre`, `GoAT`) ship inside the wheel. Resolve one from Python with `config_path("mets")` (see the Python library section above), or use the clone-relative path `brats_evaluation/configs/config_mets.yaml` if you cloned the repo.
 
 **Arguments:**
 *   `--ref_path`: Path to the directory containing reference (ground truth) NIfTI files.
@@ -116,13 +86,13 @@ The bundled configs also ship inside the installed wheel; from a pip install, re
 *   `--summary_json`: (Optional) Output path for the JSON file summarizing all evaluation metrics. Default: `./panoptica_evaluation_summary.json`.
 *   `--num_subjects`: (Optional) Number of subjects to process (e.g. `--num_subjects 5`). Useful for quick testing. If omitted, all subjects are processed.
 
-### 2. Parsing the Results (`brats-parse-metrics`)
+### 2. Parse the results (`brats-parse-metrics`)
 
-Once the evaluation is complete, a `JSON` file will be created which includes all the quantified metrics. 
-In order to extract only the metrics which are used for the BraTS Leaderboard and ranking, 
-use the parser command to extract these metrics into a clean CSV format. 
+Once the evaluation is complete, a `JSON` file will be created which includes all the quantified metrics.
+In order to extract only the metrics which are used for the BraTS Leaderboard and ranking,
+use the parser command to extract these metrics into a clean CSV format.
 
-The parser supports two commands: `seg` (for all segmentation tasks except for the Metastasis) and `mets` 
+The parser supports two commands: `seg` (for all segmentation tasks except for the Metastasis) and `mets`
 (for only the Metastasis task which needs both segmentation and detection metrics).
 
 **Command (Basic Segmentation Metrics):**
@@ -145,8 +115,40 @@ brats-parse-metrics mets \
 *   `--vol_threshold`: Volume threshold to differentiate between large and small lesions (e.g., 20.0 voxels/mm3 depending on your config).
 *   `--overlap_threshold`: Dice score threshold to classify small lesions as True Positive (TP) or False Negative (FN).
 
-### Example
-For a complete, step-by-step walkthrough of the evaluation and parsing process, please refer to the detailed Jupyter Notebook example available at: **[`./example/brats_mets.ipynb`](./example/brats_mets.ipynb)**.
+### Example notebook
+For a complete, step-by-step walkthrough of the evaluation and parsing process, see the Jupyter notebook at **[`./example/brats_mets.ipynb`](./example/brats_mets.ipynb)**.
+
+---
+
+## Modifying the pipeline
+
+If you want to tweak the evaluation logic or the Panoptica configs, clone the repo and install with Poetry.
+
+Create and activate a Python environment using **either** conda **or** the built-in `venv`:
+
+```bash
+# Option 1 — conda
+conda create -n brats_eval python=3.10
+conda activate brats_eval
+```
+
+```bash
+# Option 2 — venv (no conda required)
+python3.10 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+```
+
+Then clone the repo and install with Poetry:
+
+```bash
+git clone https://github.com/BraTS/BraTS_evaluation.git
+cd BraTS_evaluation
+poetry install
+```
+
+If Poetry is not yet available, install it via **either** route:
+*   `conda install -c conda-forge poetry` (for conda users — keeps Poetry inside the env)
+*   `curl -sSL https://install.python-poetry.org | python3 -` (official standalone installer)
 
 ---
 
