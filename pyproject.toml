@@ -28,8 +28,11 @@ repository = "https://github.com/BraTS/BraTS_evaluation"
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 panoptica = ">=2.1.0"
-SimpleITK = "^2.2.2"  # Ensure this is here
-nibabel = "^5.1.0"    # Ensure this is here
+pandas = "^2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.2"
+
+[tool.poetry.scripts]
+brats-evaluate = "brats_evaluation.evaluation:main"
+brats-parse-metrics = "brats_evaluation.metrics_parser:main"

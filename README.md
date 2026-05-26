@@ -13,7 +13,7 @@ Robust, and rigorous evaluation of segmentation algorithms across these diverse 
 
 ## Panoptica: Instance-Wise Evaluation
 
-Panoptica is a comprehensive Python library designed to bridge the gap between global semantic evaluation and clinical necessity by enabling rigorous instance-wise and lesion-wise quantification.
+[Panoptica](https://github.com/BrainLesion/panoptica) is a comprehensive Python library designed to bridge the gap between global semantic evaluation and clinical necessity by enabling rigorous instance-wise and lesion-wise quantification.
 While traditional metrics like the whole-volume Dice score often mask critical individual detection errors, Panoptica isolates and evaluates discrete structures such as tumor subregions through a robust pipeline of instance approximation, matching, and evaluation. 
 
 It computes a comprehensive suite of vital detection and segmentation metrics like:
@@ -29,64 +29,82 @@ standardizing clinical research pipelines, and ensuring that medical image segme
 
 ## Installation
 
-To set up the evaluation environment, you need to install the required Python packages:
-
 ```bash
-# It is recommended to use a virtual environment
-conda create -n brats_eval python=3.10
-conda activate brats_eval
-git clone https://github.com/BraTS/BraTS_evaluation.git
-cd BraTS_evaluation
-poetry install
+pip install BraTS-evaluation
 ```
-(Note: If Poetry is not installed, you can do as follow: `curl -sSL https://install.python-poetry.org | python3 -`)
+
+This installs the `brats_evaluation` Python package and exposes two console scripts: `brats-evaluate` and `brats-parse-metrics`.
 
 ---
 
 ## Usage
 
-The evaluation pipeline consists of two main steps: running the evaluation to generate a JSON summary, and parsing the JSON to create a structured CSV report.
+The evaluation pipeline runs in two steps: produce a JSON summary with `brats-evaluate`, then turn that JSON into a CSV report with `brats-parse-metrics`. Either step can also be driven from Python.
 
-### 1. Running the Evaluation (`evaluation.py`)
+### Python library
 
-This script evaluates prediction NIfTI files against reference (ground truth) NIfTI files using the Panoptica framework.
+Call the evaluator directly from your own Python code:
+
+```python
+from panoptica import Panoptica_Evaluator
+from brats_evaluation import config_path, evaluate_single_exam
+
+# Bundled configs: "mets", "gli", "ped", "MenRT", "MenPre", "GoAT"
+evaluator = Panoptica_Evaluator.load_from_config(str(config_path("mets")))
+results = evaluate_single_exam(
+    prediction_filepath="path/to/pred.nii.gz",
+    reference_filepath="path/to/ref.nii.gz",
+    subject_identifier="case-001",
+    evaluator=evaluator,
+)
+print(results)
+```
+
+For a runnable, end-to-end example using the bundled sample data see [`./example/programmatic_example.py`](./example/programmatic_example.py).
+
+### 1. Run the evaluation (`brats-evaluate`)
+
+This command evaluates prediction NIfTI files against reference (ground truth) NIfTI files using the Panoptica framework.
 
 **Command:**
 ```bash
-python evaluation.py \
+brats-evaluate \
     --ref_path /path/to/reference/niftis/ \
     --pred_path /path/to/prediction/niftis/ \
-    --config_path /path/to/panoptica_config.yaml \
-    --summary_json ./panoptica_evaluation_summary.json \
-    --num_subjects 
+    --config_path path/to/config_mets.yaml \
+    --summary_json ./panoptica_evaluation_summary.json
 ```
+
+(Equivalent to `python -m brats_evaluation.evaluation ...` if you prefer the module form.)
+
+Bundled configs (`mets`, `gli`, `ped`, `MenRT`, `MenPre`, `GoAT`) ship inside the wheel. Resolve one from Python with `config_path("mets")` (see the Python library section above), or use the clone-relative path `brats_evaluation/configs/config_mets.yaml` if you cloned the repo.
 
 **Arguments:**
 *   `--ref_path`: Path to the directory containing reference (ground truth) NIfTI files.
 *   `--pred_path`: Path to the directory containing prediction NIfTI files.
-*   `--config_path`: Path to the Panoptica configuration YAML file (e.g., `./brats-configs/config_mets.yaml`).
+*   `--config_path`: Path to the Panoptica configuration YAML file (e.g., `brats_evaluation/configs/config_mets.yaml`).
 *   `--summary_json`: (Optional) Output path for the JSON file summarizing all evaluation metrics. Default: `./panoptica_evaluation_summary.json`.
-*   `--num_subjects`: (Optional) Number of subjects to process. Useful for quick testing.
+*   `--num_subjects`: (Optional) Number of subjects to process (e.g. `--num_subjects 5`). Useful for quick testing. If omitted, all subjects are processed.
 
-### 2. Parsing the Results (`metrics_parser.py`)
+### 2. Parse the results (`brats-parse-metrics`)
 
-Once the evaluation is complete, a `JSON` file will be created which includes all the quantified metrics. 
-In order to extract only the metrics which are used for the BraTS Leaderboard and ranking, 
-use the parser script to extract these metrics into a clean CSV format. 
+Once the evaluation is complete, a `JSON` file will be created which includes all the quantified metrics.
+In order to extract only the metrics which are used for the BraTS Leaderboard and ranking,
+use the parser command to extract these metrics into a clean CSV format.
 
-The parser supports two commands: `seg` (for all segmentation tasks except for the Metastasis) and `mets` 
+The parser supports two commands: `seg` (for all segmentation tasks except for the Metastasis) and `mets`
 (for only the Metastasis task which needs both segmentation and detection metrics).
 
 **Command (Basic Segmentation Metrics):**
 ```bash
-python metrics_parser.py seg \
+brats-parse-metrics seg \
     --json_path ./panoptica_evaluation_summary.json \
     --output_csv_path ./parsed_panoptica_seg_stats.csv
 ```
 
 **Command (Metastasis/Detailed Instance Metrics):**
 ```bash
-python metrics_parser.py mets \
+brats-parse-metrics mets \
     --json_path ./panoptica_evaluation_summary.json \
     --vol_threshold 20.0 \
     --overlap_threshold 0.1 \
@@ -97,8 +115,40 @@ python metrics_parser.py mets \
 *   `--vol_threshold`: Volume threshold to differentiate between large and small lesions (e.g., 20.0 voxels/mm3 depending on your config).
 *   `--overlap_threshold`: Dice score threshold to classify small lesions as True Positive (TP) or False Negative (FN).
 
-### Example
-For a complete, step-by-step walkthrough of the evaluation and parsing process, please refer to the detailed Jupyter Notebook example available at: **[`./example/brats_mets.ipynb`](./example/brats_mets.ipynb)**.
+### Example notebook
+For a complete, step-by-step walkthrough of the evaluation and parsing process, see the Jupyter notebook at **[`./example/brats_mets.ipynb`](./example/brats_mets.ipynb)**.
+
+---
+
+## Modifying the pipeline
+
+If you want to tweak the evaluation logic or the Panoptica configs, clone the repo and install with Poetry.
+
+Create and activate a Python environment using **either** conda **or** the built-in `venv`:
+
+```bash
+# Option 1 — conda
+conda create -n brats_eval python=3.10
+conda activate brats_eval
+```
+
+```bash
+# Option 2 — venv (no conda required)
+python3.10 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+```
+
+Then clone the repo and install with Poetry:
+
+```bash
+git clone https://github.com/BraTS/BraTS_evaluation.git
+cd BraTS_evaluation
+poetry install
+```
+
+If Poetry is not yet available, install it via **either** route:
+*   `conda install -c conda-forge poetry` (for conda users — keeps Poetry inside the env)
+*   `curl -sSL https://install.python-poetry.org | python3 -` (official standalone installer)
 
 ---
 
