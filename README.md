@@ -29,17 +29,61 @@ standardizing clinical research pipelines, and ensuring that medical image segme
 
 ## Installation
 
-To set up the evaluation environment, you need to install the required Python packages, primarily `panoptica` and `pandas`.
+You can either install the package from PyPI to use it in your own scripts, or clone this repository to run and modify the provided CLI scripts and configs directly.
+
+### Option A: Install as a package (recommended for users)
 
 ```bash
-# It is recommended to use a virtual environment
+pip install BraTS-evaluation
+```
+
+This installs the `brats_evaluation` Python package and exposes two console scripts: `brats-evaluate` and `brats-parse-metrics`.
+
+**Use as a library** — call the evaluator from your own Python code:
+
+```python
+from panoptica import Panoptica_Evaluator
+from brats_evaluation import evaluate_single_exam
+
+evaluator = Panoptica_Evaluator.load_from_config("brats-configs/config_mets.yaml")
+results = evaluate_single_exam(
+    prediction_filepath="path/to/pred.nii.gz",
+    reference_filepath="path/to/ref.nii.gz",
+    subject_identifier="case-001",
+    evaluator=evaluator,
+)
+print(results)
+```
+
+For a runnable, end-to-end example using the bundled sample data see [`./example/programmatic_example.py`](./example/programmatic_example.py).
+
+### Option B: Clone and modify (recommended for organizers / customization)
+
+Create and activate a Python environment using **either** conda **or** the built-in `venv`:
+
+```bash
+# Option B1 — conda
 conda create -n brats_eval python=3.10
 conda activate brats_eval
+```
+
+```bash
+# Option B2 — venv (no conda required)
+python3.10 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+```
+
+Then clone the repo and install with Poetry:
+
+```bash
 git clone https://github.com/BraTS/BraTS_evaluation.git
 cd BraTS_evaluation
 poetry install
 ```
-(Note: If Poetry is not installed, you can do as follow: `curl -sSL https://install.python-poetry.org | python3 -`)
+
+If Poetry is not yet available, install it via **either** route:
+*   `conda install -c conda-forge poetry` (for conda users — keeps Poetry inside the env)
+*   `curl -sSL https://install.python-poetry.org | python3 -` (official standalone installer)
 
 ---
 
@@ -47,46 +91,47 @@ poetry install
 
 The evaluation pipeline consists of two main steps: running the evaluation to generate a JSON summary, and parsing the JSON to create a structured CSV report.
 
-### 1. Running the Evaluation (`evaluation.py`)
+### 1. Running the Evaluation (`brats-evaluate`)
 
-This script evaluates prediction NIfTI files against reference (ground truth) NIfTI files using the Panoptica framework.
+This command evaluates prediction NIfTI files against reference (ground truth) NIfTI files using the Panoptica framework.
 
 **Command:**
 ```bash
-python evaluation.py \
+brats-evaluate \
     --ref_path /path/to/reference/niftis/ \
     --pred_path /path/to/prediction/niftis/ \
     --config_path /path/to/panoptica_config.yaml \
-    --summary_json ./panoptica_evaluation_summary.json \
-    --num_subjects 
+    --summary_json ./panoptica_evaluation_summary.json
 ```
+
+(Equivalent to `python -m brats_evaluation.evaluation ...` if you prefer the module form.)
 
 **Arguments:**
 *   `--ref_path`: Path to the directory containing reference (ground truth) NIfTI files.
 *   `--pred_path`: Path to the directory containing prediction NIfTI files.
 *   `--config_path`: Path to the Panoptica configuration YAML file (e.g., `./brats-configs/config_mets.yaml`).
 *   `--summary_json`: (Optional) Output path for the JSON file summarizing all evaluation metrics. Default: `./panoptica_evaluation_summary.json`.
-*   `--num_subjects`: (Optional) Number of subjects to process. Useful for quick testing.
+*   `--num_subjects`: (Optional) Number of subjects to process (e.g. `--num_subjects 5`). Useful for quick testing. If omitted, all subjects are processed.
 
-### 2. Parsing the Results (`metrics_parser.py`)
+### 2. Parsing the Results (`brats-parse-metrics`)
 
 Once the evaluation is complete, a `JSON` file will be created which includes all the quantified metrics. 
 In order to extract only the metrics which are used for the BraTS Leaderboard and ranking, 
-use the parser script to extract these metrics into a clean CSV format. 
+use the parser command to extract these metrics into a clean CSV format. 
 
 The parser supports two commands: `seg` (for all segmentation tasks except for the Metastasis) and `mets` 
 (for only the Metastasis task which needs both segmentation and detection metrics).
 
 **Command (Basic Segmentation Metrics):**
 ```bash
-python metrics_parser.py seg \
+brats-parse-metrics seg \
     --json_path ./panoptica_evaluation_summary.json \
     --output_csv_path ./parsed_panoptica_seg_stats.csv
 ```
 
 **Command (Metastasis/Detailed Instance Metrics):**
 ```bash
-python metrics_parser.py mets \
+brats-parse-metrics mets \
     --json_path ./panoptica_evaluation_summary.json \
     --vol_threshold 20.0 \
     --overlap_threshold 0.1 \

@@ -161,3 +161,7 @@ cython_debug/
 
 .vscode
 .DS_Store
+
+# Local evaluation outputs
+/panoptica_evaluation_summary.json
+/parsed_panoptica_*.csv
