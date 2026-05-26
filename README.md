@@ -31,7 +31,7 @@ standardizing clinical research pipelines, and ensuring that medical image segme
 
 You can either install the package from PyPI to use it in your own scripts, or clone this repository to run and modify the provided CLI scripts and configs directly.
 
-### Option A: Install as a package (recommended for users)
+### Option A: Install as a package
 
 ```bash
 pip install BraTS-evaluation
@@ -58,7 +58,7 @@ print(results)
 
 For a runnable, end-to-end example using the bundled sample data see [`./example/programmatic_example.py`](./example/programmatic_example.py).
 
-### Option B: Clone and modify (recommended for organizers / customization)
+### Option B: Clone (If you want to modify the pipeline)
 
 Create and activate a Python environment using **either** conda **or** the built-in `venv`:
 
@@ -101,19 +101,13 @@ This command evaluates prediction NIfTI files against reference (ground truth) N
 brats-evaluate \
     --ref_path /path/to/reference/niftis/ \
     --pred_path /path/to/prediction/niftis/ \
-    --config_path /path/to/panoptica_config.yaml \
+    --config_path brats_evaluation/configs/config_mets.yaml \
     --summary_json ./panoptica_evaluation_summary.json
 ```
 
 (Equivalent to `python -m brats_evaluation.evaluation ...` if you prefer the module form.)
 
-The bundled configs are shipped inside the package. From a clone, point `--config_path` at `brats_evaluation/configs/config_<name>.yaml`. From a pip install, resolve the path on the fly:
-
-```bash
-brats-evaluate \
-    --config_path "$(python -c 'from brats_evaluation import config_path; print(config_path("mets"))')" \
-    ...
-```
+The bundled configs also ship inside the installed wheel; from a pip install, resolve them in Python with `config_path("mets")` (see Option A above).
 
 **Arguments:**
 *   `--ref_path`: Path to the directory containing reference (ground truth) NIfTI files.
