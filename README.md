@@ -1,57 +1,108 @@
-# inpainting
-Official package to compute metrics for the [BraTS inpainting challenge](https://x.com/BraTS_inpaint).
+# BraTS Evaluation
+
+The Brain TumorS aka Brain Tumor Segmentation (BraTS) challenge is a globally recognized community benchmark for the evaluation of automated segmentation algorithms in neuro-oncology. Over the years, BraTS has expanded to encompass a variety of specialized tasks, including:
+
+*   **Glioma Segmentation**: The flagship task, focusing on the delineation of distinct sub-regions (e.g., enhancing tumor, tumor core, and whole tumor) in adult gliomas.
+*   **Pediatric Tumor Segmentation**: Targeting brain tumors in pediatric patients, addressing the distinct anatomical and pathological characteristics seen in this population.
+*   **Brain Metastasis Segmentation**: Focusing on the detection and segmentation of metastatic brain lesions, which are often small, numerous, and anatomically diverse.
+*   **Meningioma Segmentation**: Evaluating the accurate boundary delineation of meningiomas, the most common primary central nervous system tumor.
+
+Robust, and rigorous evaluation of segmentation algorithms across these diverse tasks is essential to accurately gauge clinical applicability and algorithmic performance.
+
+---
+
+## Panoptica: Instance-Wise Evaluation
+
+Panoptica is a comprehensive Python library designed to bridge the gap between global semantic evaluation and clinical necessity by enabling rigorous instance-wise and lesion-wise quantification.
+While traditional metrics like the whole-volume Dice score often mask critical individual detection errors, Panoptica isolates and evaluates discrete structures such as tumor subregions through a robust pipeline of instance approximation, matching, and evaluation. 
+
+It computes a comprehensive suite of vital detection and segmentation metrics like:
+
+* **Detection metics** True Positive, False Positive, and False Negative detection rates, 
+* **Instance-specific overlap metrics** including Intersection over Union (IoU), instance-level Dice scores, and Average Precision (AP). 
+* **Instance-specific distance metrics** such as Normalized surface distance (NSD), and Hausdorff distance (HD95).
+
+* This makes Panoptica a reliable tool for benchmarking deep learning models in medical image segmentation tasks,
+standardizing clinical research pipelines, and ensuring that medical image segmentation models are evaluated on their true clinical utility rather than just gross volumetric overlap.
+
+---
+
+## Installation
+
+To set up the evaluation environment, you need to install the required Python packages, primarily `panoptica` and `pandas`.
+
+```bash
+# It is recommended to use a virtual environment
+conda create -n brats_eval python=3.10
+conda activate brats_eval
+git clone https://github.com/BraTS/BraTS_evaluation.git
+cd BraTS_evaluation
+poetry install
+```
+(Note: If Poetry is not installed, you can do as follow: `curl -sSL https://install.python-poetry.org | python3 -`)
+
+---
 
 ## Usage
-```
-from inpainting.challenge_metrics_2023 import generate_metrics, read_nifti_to_tensor
 
+The evaluation pipeline consists of two main steps: running the evaluation to generate a JSON summary, and parsing the JSON to create a structured CSV report.
 
-def compute_image_quality_metrics(
-    prediction: str,
-    healthy_mask: str,
-    reference_t1: str,
-    voided_t1: str,
-) -> dict:
-    print("computing metrics!")
-    print("prediction:", prediction)
-    print("healthy_mask:", healthy_mask)
-    print("reference_t1:", reference_t1)
-    print("voided_t1:", voided_t1)
+### 1. Running the Evaluation (`evaluation.py`)
 
-    prediction_data = read_nifti_to_tensor(prediction)
-    healthy_mask_data = read_nifti_to_tensor(healthy_mask).bool()
-    reference_t1_data = read_nifti_to_tensor(reference_t1)
-    voided_t1_data = read_nifti_to_tensor(voided_t1)
+This script evaluates prediction NIfTI files against reference (ground truth) NIfTI files using the Panoptica framework.
 
-    metrics = generate_metrics(
-        prediction=prediction_data,
-        target=reference_t1_data,
-        normalization_tensor=voided_t1_data,
-        mask=healthy_mask_data,
-    )
-
-    return metrics
-
+**Command:**
+```bash
+python evaluation.py \
+    --ref_path /path/to/reference/niftis/ \
+    --pred_path /path/to/prediction/niftis/ \
+    --config_path /path/to/panoptica_config.yaml \
+    --summary_json ./panoptica_evaluation_summary.json \
+    --num_subjects 
 ```
 
+**Arguments:**
+*   `--ref_path`: Path to the directory containing reference (ground truth) NIfTI files.
+*   `--pred_path`: Path to the directory containing prediction NIfTI files.
+*   `--config_path`: Path to the Panoptica configuration YAML file (e.g., `./brats-configs/config_mets.yaml`).
+*   `--summary_json`: (Optional) Output path for the JSON file summarizing all evaluation metrics. Default: `./panoptica_evaluation_summary.json`.
+*   `--num_subjects`: (Optional) Number of subjects to process. Useful for quick testing.
 
-## Citation
-Please cite our [manuscript](https://arxiv.org/pdf/2305.08992.pdf) when using the package:
+### 2. Parsing the Results (`metrics_parser.py`)
+
+Once the evaluation is complete, a `JSON` file will be created which includes all the quantified metrics. 
+In order to extract only the metrics which are used for the BraTS Leaderboard and ranking, 
+use the parser script to extract these metrics into a clean CSV format. 
+
+The parser supports two commands: `seg` (for all segmentation tasks except for the Metastasis) and `mets` 
+(for only the Metastasis task which needs both segmentation and detection metrics).
+
+**Command (Basic Segmentation Metrics):**
+```bash
+python metrics_parser.py seg \
+    --json_path ./panoptica_evaluation_summary.json \
+    --output_csv_path ./parsed_panoptica_seg_stats.csv
 ```
-@misc{kofler2023brain,
-      title={The Brain Tumor Segmentation (BraTS) Challenge 2023: Local Synthesis of Healthy Brain Tissue via Inpainting}, 
-      author={Florian Kofler and Felix Meissen and Felix Steinbauer and Robert Graf and Eva Oswald and Ezequiel de da Rosa and Hongwei Bran Li and Ujjwal Baid and Florian Hoelzl and Oezguen Turgut and Izabela Horvath and Diana Waldmannstetter and Christina Bukas and Maruf Adewole and Syed Muhammad Anwar and Anastasia Janas and Anahita Fathi Kazerooni and Dominic LaBella and Ahmed W Moawad and Keyvan Farahani and James Eddy and Timothy Bergquist and Verena Chung and Russell Takeshi Shinohara and Farouk Dako and Walter Wiggins and Zachary Reitman and Chunhao Wang and Xinyang Liu and Zhifan Jiang and Ariana Familiar and Gian-Marco Conte and Elaine Johanson and Zeke Meier and Christos Davatzikos and John Freymann and Justin Kirby and Michel Bilello and Hassan M Fathallah-Shaykh and Roland Wiest and Jan Kirschke and Rivka R Colen and Aikaterini Kotrotsou and Pamela Lamontagne and Daniel Marcus and Mikhail Milchenko and Arash Nazeri and Marc-André Weber and Abhishek Mahajan and Suyash Mohan and John Mongan and Christopher Hess and Soonmee Cha and Javier Villanueva-Meyer and Errol Colak and Priscila Crivellaro and Andras Jakab and Jake Albrecht and Udunna Anazodo and Mariam Aboian and Juan Eugenio Iglesias and Koen Van Leemput and Spyridon Bakas and Daniel Rueckert and Benedikt Wiestler and Ivan Ezhov and Marie Piraud and Bjoern Menze},
-      year={2023},
-      eprint={2305.08992},
-      archivePrefix={arXiv},
-      primaryClass={eess.IV}
-}
+
+**Command (Metastasis/Detailed Instance Metrics):**
+```bash
+python metrics_parser.py mets \
+    --json_path ./panoptica_evaluation_summary.json \
+    --vol_threshold 20.0 \
+    --overlap_threshold 0.1 \
+    --output_csv_path ./parsed_panoptica_mets_stats.csv
 ```
 
+**Arguments for `mets` command:**
+*   `--vol_threshold`: Volume threshold to differentiate between large and small lesions (e.g., 20.0 voxels/mm3 depending on your config).
+*   `--overlap_threshold`: Dice score threshold to classify small lesions as True Positive (TP) or False Negative (FN).
 
+### Example
+For a complete, step-by-step walkthrough of the evaluation and parsing process, please refer to the detailed Jupyter Notebook example available at: **[`./example/brats_mets.ipynb`](./example/brats_mets.ipynb)**.
 
-<!-- ## install dependencies
-```
-poetry export -f requirements.txt > requirements.txt
-pip install -r  requirements.txt
-``` -->
+---
+
+## References
+
+1.  **BraTS Challenge**: [Brain TumorS (BraTS) Challenge](https://www.synapse.org/Synapse:syn74274097/wiki/639571)
+2.  **Panoptica Library**: [Panoptica evaluation framework](https://github.com/BrainLesion/panoptica)
