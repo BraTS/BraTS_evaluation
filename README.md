@@ -13,7 +13,7 @@ Robust, and rigorous evaluation of segmentation algorithms across these diverse 
 
 ## Panoptica: Instance-Wise Evaluation
 
-Panoptica is a comprehensive Python library designed to bridge the gap between global semantic evaluation and clinical necessity by enabling rigorous instance-wise and lesion-wise quantification.
+[Panoptica](https://github.com/BrainLesion/panoptica) is a comprehensive Python library designed to bridge the gap between global semantic evaluation and clinical necessity by enabling rigorous instance-wise and lesion-wise quantification.
 While traditional metrics like the whole-volume Dice score often mask critical individual detection errors, Panoptica isolates and evaluates discrete structures such as tumor subregions through a robust pipeline of instance approximation, matching, and evaluation. 
 
 It computes a comprehensive suite of vital detection and segmentation metrics like:
@@ -43,9 +43,10 @@ This installs the `brats_evaluation` Python package and exposes two console scri
 
 ```python
 from panoptica import Panoptica_Evaluator
-from brats_evaluation import evaluate_single_exam
+from brats_evaluation import config_path, evaluate_single_exam
 
-evaluator = Panoptica_Evaluator.load_from_config("brats-configs/config_mets.yaml")
+# Bundled configs: "mets", "gli", "ped", "MenRT", "MenPre", "GoAT"
+evaluator = Panoptica_Evaluator.load_from_config(str(config_path("mets")))
 results = evaluate_single_exam(
     prediction_filepath="path/to/pred.nii.gz",
     reference_filepath="path/to/ref.nii.gz",
@@ -106,10 +107,18 @@ brats-evaluate \
 
 (Equivalent to `python -m brats_evaluation.evaluation ...` if you prefer the module form.)
 
+The bundled configs are shipped inside the package. From a clone, point `--config_path` at `brats_evaluation/configs/config_<name>.yaml`. From a pip install, resolve the path on the fly:
+
+```bash
+brats-evaluate \
+    --config_path "$(python -c 'from brats_evaluation import config_path; print(config_path("mets"))')" \
+    ...
+```
+
 **Arguments:**
 *   `--ref_path`: Path to the directory containing reference (ground truth) NIfTI files.
 *   `--pred_path`: Path to the directory containing prediction NIfTI files.
-*   `--config_path`: Path to the Panoptica configuration YAML file (e.g., `./brats-configs/config_mets.yaml`).
+*   `--config_path`: Path to the Panoptica configuration YAML file (e.g., `brats_evaluation/configs/config_mets.yaml`).
 *   `--summary_json`: (Optional) Output path for the JSON file summarizing all evaluation metrics. Default: `./panoptica_evaluation_summary.json`.
 *   `--num_subjects`: (Optional) Number of subjects to process (e.g. `--num_subjects 5`). Useful for quick testing. If omitted, all subjects are processed.
 

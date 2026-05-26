@@ -11,16 +11,15 @@ from pathlib import Path
 
 from panoptica import Panoptica_Evaluator
 
-from brats_evaluation import evaluate_single_exam
+from brats_evaluation import config_path, evaluate_single_exam
 
 
 def main() -> None:
     repo_root = Path(__file__).resolve().parent.parent
     ref_dir = repo_root / "example" / "sample_data" / "ref"
     pred_dir = repo_root / "example" / "sample_data" / "pred"
-    config_path = repo_root / "brats-configs" / "config_mets.yaml"
 
-    evaluator = Panoptica_Evaluator.load_from_config(str(config_path))
+    evaluator = Panoptica_Evaluator.load_from_config(str(config_path("mets")))
     pred_files = list(pred_dir.glob("*.nii.gz"))
 
     for ref_file in sorted(ref_dir.glob("*.nii.gz")):
