@@ -2,7 +2,12 @@ import argparse
 import os
 import json
 import re
+from importlib.resources import files
+from pathlib import Path
+
 from panoptica import Panoptica_Evaluator
+
+BUNDLED_CONFIGS = ["mets", "gli", "ped", "MenRT", "MenPre", "GoAT"]
 
 def evaluate_single_exam(
     prediction_filepath: str,
@@ -64,11 +69,17 @@ def main():
         required=True,
         help="Path to the directory containing prediction NIfTI files.",
     )
-    parser.add_argument(
+    config_group = parser.add_mutually_exclusive_group(required=True)
+    config_group.add_argument(
+        "--config",
+        type=str,
+        choices=BUNDLED_CONFIGS,
+        help="Name of a bundled Panoptica config (e.g., mets, gli, ped).",
+    )
+    config_group.add_argument(
         "--config_path",
         type=str,
-        required=True,
-        help="Path to the Panoptica configuration YAML file (e.g., config_mets.yaml).",
+        help="Path to a custom Panoptica configuration YAML file.",
     )
     parser.add_argument(
         "--summary_json",
@@ -85,6 +96,16 @@ def main():
 
     args = parser.parse_args()
 
+    # Resolve config path
+    if args.config:
+        config_path = Path(str(files("brats_evaluation").joinpath("configs", f"config_{args.config}.yaml")))
+        if not config_path.exists():
+            print(f"Error: Bundled config '{args.config}' not found at {config_path}")
+            return
+        config_path = str(config_path)
+    else:
+        config_path = args.config_path
+
     # 2. Validate Paths
     if not os.path.isdir(args.ref_path):
         print(f"Error: Reference path '{args.ref_path}' is not a valid directory.")
@@ -92,8 +113,8 @@ def main():
     if not os.path.isdir(args.pred_path):
         print(f"Error: Prediction path '{args.pred_path}' is not a valid directory.")
         return
-    if not os.path.exists(args.config_path):
-        print(f"Error: Config path '{args.config_path}' does not exist.")
+    if not os.path.exists(config_path):
+        print(f"Error: Config path '{config_path}' does not exist.")
         return
 
     # 3. Prepare for Evaluation
@@ -104,7 +125,7 @@ def main():
 
     # Initialize Panoptica Evaluator once for all subjects to improve performance
     print("Initializing Panoptica Evaluator...")
-    evaluator = Panoptica_Evaluator.load_from_config(args.config_path)
+    evaluator = Panoptica_Evaluator.load_from_config(config_path)
 
     # Get list of reference files (assuming NIfTI files)
     reference_files = sorted([f for f in os.listdir(args.ref_path) if f.endswith(".nii.gz")])

@@ -41,27 +41,6 @@ This installs the `brats_evaluation` Python package and exposes two console scri
 
 The evaluation pipeline runs in two steps: produce a JSON summary with `brats-evaluate`, then turn that JSON into a CSV report with `brats-parse-metrics`. Either step can also be driven from Python.
 
-### Python library
-
-Call the evaluator directly from your own Python code:
-
-```python
-from panoptica import Panoptica_Evaluator
-from brats_evaluation import config_path, evaluate_single_exam
-
-# Bundled configs: "mets", "gli", "ped", "MenRT", "MenPre", "GoAT"
-evaluator = Panoptica_Evaluator.load_from_config(str(config_path("mets")))
-results = evaluate_single_exam(
-    prediction_filepath="path/to/pred.nii.gz",
-    reference_filepath="path/to/ref.nii.gz",
-    subject_identifier="case-001",
-    evaluator=evaluator,
-)
-print(results)
-```
-
-For a runnable, end-to-end example using the bundled sample data see [`./example/programmatic_example.py`](./example/programmatic_example.py).
-
 ### 1. Run the evaluation (`brats-evaluate`)
 
 This command evaluates prediction NIfTI files against reference (ground truth) NIfTI files using the Panoptica framework.
@@ -69,20 +48,19 @@ This command evaluates prediction NIfTI files against reference (ground truth) N
 **Command:**
 ```bash
 brats-evaluate \
+    --config mets \
     --ref_path /path/to/reference/niftis/ \
     --pred_path /path/to/prediction/niftis/ \
-    --config_path path/to/config_mets.yaml \
     --summary_json ./panoptica_evaluation_summary.json
 ```
 
-(Equivalent to `python -m brats_evaluation.evaluation ...` if you prefer the module form.)
-
-Bundled configs (`mets`, `gli`, `ped`, `MenRT`, `MenPre`, `GoAT`) ship inside the wheel. Resolve one from Python with `config_path("mets")` (see the Python library section above), or use the clone-relative path `brats_evaluation/configs/config_mets.yaml` if you cloned the repo.
+Use `--config` with a bundled config name (`mets`, `gli`, `ped`, `MenRT`, `MenPre`, `GoAT`), or `--config_path` to point at a custom YAML file.
 
 **Arguments:**
+*   `--config`: Name of a bundled Panoptica config (`mets`, `gli`, `ped`, `MenRT`, `MenPre`, `GoAT`).
+*   `--config_path`: Path to a custom Panoptica configuration YAML file (mutually exclusive with `--config`).
 *   `--ref_path`: Path to the directory containing reference (ground truth) NIfTI files.
 *   `--pred_path`: Path to the directory containing prediction NIfTI files.
-*   `--config_path`: Path to the Panoptica configuration YAML file (e.g., `brats_evaluation/configs/config_mets.yaml`).
 *   `--summary_json`: (Optional) Output path for the JSON file summarizing all evaluation metrics. Default: `./panoptica_evaluation_summary.json`.
 *   `--num_subjects`: (Optional) Number of subjects to process (e.g. `--num_subjects 5`). Useful for quick testing. If omitted, all subjects are processed.
 
@@ -114,6 +92,27 @@ brats-parse-metrics mets \
 **Arguments for `mets` command:**
 *   `--vol_threshold`: Volume threshold to differentiate between large and small lesions (e.g., 20.0 voxels/mm3 depending on your config).
 *   `--overlap_threshold`: Dice score threshold to classify small lesions as True Positive (TP) or False Negative (FN).
+
+### Python library
+
+Call the evaluator directly from your own Python code:
+
+```python
+from panoptica import Panoptica_Evaluator
+from brats_evaluation import config_path, evaluate_single_exam
+
+# Bundled configs: "mets", "gli", "ped", "MenRT", "MenPre", "GoAT"
+evaluator = Panoptica_Evaluator.load_from_config(str(config_path("mets")))
+results = evaluate_single_exam(
+    prediction_filepath="path/to/pred.nii.gz",
+    reference_filepath="path/to/ref.nii.gz",
+    subject_identifier="case-001",
+    evaluator=evaluator,
+)
+print(results)
+```
+
+For a runnable, end-to-end example using the bundled sample data see [`./example/programmatic_example.py`](./example/programmatic_example.py).
 
 ### Example notebook
 For a complete, step-by-step walkthrough of the evaluation and parsing process, see the Jupyter notebook at **[`./example/brats_mets.ipynb`](./example/brats_mets.ipynb)**.

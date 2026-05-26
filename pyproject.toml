@@ -29,6 +29,8 @@ repository = "https://github.com/BraTS/BraTS_evaluation"
 python = ">=3.10,<4.0"
 panoptica = ">=2.1.0"
 pandas = "^2.0"
+SimpleITK = "^2.2.2"
+nibabel = "^5.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.2"
