@@ -30,7 +30,7 @@ def _handle_missing_data(data, final_data_rows):
             missing_row = {"subject_id": missing_subject}
             for key in keys_to_fill:
                 if "hd95" in key:
-                    missing_row[key] = 373
+                    missing_row[key] = 373 # diameter of the cube in SRI space; using the maximum penalty instead of INF.
                 else:
                     missing_row[key] = 0
             final_data_rows.append(missing_row)
@@ -75,21 +75,8 @@ def parse_seg_results(json_path, output_csv_path):
             subject_row_data[f"global_nsd_{key}"] = region_data.get("global_bin_nsd", np.nan)
             global_hd95 = region_data.get("global_bin_hd95")
             if global_hd95 is not None and np.isinf(global_hd95):
-                global_hd95 = 373
+                global_hd95 = 373 # diameter of the cube in SRI space; using the maximum penalty instead of INF.
             subject_row_data[f"global_hd95_{key}"] = global_hd95
-
-            # # Lesion-wise metrics
-            # subject_row_data[f"lesionwise_dsc_mean_{key}"] = region_data.get("sq_dsc")
-            # subject_row_data[f"lesionwise_dsc_std_{key}"] = region_data.get("sq_dsc_std")
-            #
-            # hd95_mean = region_data.get("sq_hd95")
-            # if hd95_mean is not None and np.isinf(hd95_mean):
-            #     hd95_mean = 373
-            # subject_row_data[f"lesionwise_hd95_mean_{key}"] = hd95_mean
-            #
-            # subject_row_data[f"lesionwise_hd95_std_{key}"] = region_data.get("sq_hd95_std")
-            # subject_row_data[f"lesionwise_nsd_mean_{key}"] = region_data.get("sq_nsd")
-            # subject_row_data[f"lesionwise_nsd_std_{key}"] = region_data.get("sq_nsd_std")
 
         final_data_rows.append(subject_row_data)
 
@@ -179,7 +166,7 @@ def parse_mets_results(json_path, vol_threshold, overlap_threshold, output_csv_p
                         large_lesion_detection_fn += 1
                         large_lesion_dsc.append(0)
                         large_lesion_nsd.append(0)
-                        large_lesion_hd95.append(373)
+                        large_lesion_hd95.append(373) # 373 diameter of the cube in SRI space; using the maximum penalty instead of INF.
                     else: # Small lesion
                         detection_fn += 1
             
@@ -187,7 +174,7 @@ def parse_mets_results(json_path, vol_threshold, overlap_threshold, output_csv_p
             if num_fp > 0:
                 large_lesion_dsc.extend([0] * num_fp)
                 large_lesion_nsd.extend([0] * num_fp)
-                large_lesion_hd95.extend([373] * num_fp)
+                large_lesion_hd95.extend([373] * num_fp) # 373 diameter of the cube in SRI space; using the maximum penalty instead of INF.
 
             large_lesion_fp = num_fp
             large_denominator = (2 * large_lesion_detection_tp) + large_lesion_fp + large_lesion_detection_fn
@@ -208,7 +195,7 @@ def parse_mets_results(json_path, vol_threshold, overlap_threshold, output_csv_p
                 valid_hd95 = [v for v in large_lesion_hd95 if v is not None and not np.isinf(v)]
                 subject_row_data[f"lesionwise_dsc_mean_{key}"] = np.mean(large_lesion_dsc) if large_lesion_dsc else 0
                 subject_row_data[f"lesionwise_dsc_std_{key}"] = np.std(large_lesion_dsc) if large_lesion_dsc else 0
-                subject_row_data[f"lesionwise_hd95_mean_{key}"] = np.mean(valid_hd95) if valid_hd95 else 373
+                subject_row_data[f"lesionwise_hd95_mean_{key}"] = np.mean(valid_hd95) if valid_hd95 else 373 # diameter of the cube in SRI space; using the maximum penalty instead of INF.
                 subject_row_data[f"lesionwise_hd95_std_{key}"] = np.std(valid_hd95) if valid_hd95 else 0
                 subject_row_data[f"lesionwise_nsd_mean_{key}"] = np.mean(large_lesion_nsd) if large_lesion_nsd else 0
                 subject_row_data[f"lesionwise_nsd_std_{key}"] = np.std(large_lesion_nsd) if large_lesion_nsd else 0
