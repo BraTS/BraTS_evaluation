@@ -12,7 +12,6 @@ Robust, and rigorous evaluation of segmentation algorithms across these diverse 
 
 > Note: This package provides official implementation of the evaluation metrics for the above [BraTS segmentation challenges](https://challenges.synapse.org/brats2026).
 > For the BraTS inpainting challenge, a [separate evaluation package](https://github.com/BraTS-inpainting/inpainting) is available.
-<br>
 
 ---
 
