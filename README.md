@@ -1,4 +1,5 @@
 # BraTS Evaluation
+<img width="983" height="219" alt="image" src="https://github.com/user-attachments/assets/51c06fbb-fa48-46a9-acae-05c0a8079899" />
 
 The Brain TumorS aka Brain Tumor Segmentation (BraTS) challenge is a globally recognized community benchmark for the evaluation of automated segmentation algorithms in neuro-oncology. Over the years, BraTS has expanded to encompass a variety of specialized tasks, including:
 
