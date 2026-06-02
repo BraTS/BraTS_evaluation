@@ -1,5 +1,5 @@
 # BraTS Evaluation
-<img width="983" height="219" alt="image" src="https://github.com/user-attachments/assets/51c06fbb-fa48-46a9-acae-05c0a8079899" />
+<img width="983" height="219" alt="BraTS Banner" src="https://github.com/user-attachments/assets/51c06fbb-fa48-46a9-acae-05c0a8079899" />
 
 The Brain TumorS aka Brain Tumor Segmentation (BraTS) challenge is a globally recognized community benchmark for the evaluation of automated segmentation algorithms in neuro-oncology. Over the years, BraTS has expanded to encompass a variety of specialized tasks, including:
 
@@ -9,6 +9,9 @@ The Brain TumorS aka Brain Tumor Segmentation (BraTS) challenge is a globally re
 *   **Meningioma Segmentation**: Evaluating the accurate boundary delineation of meningiomas, the most common primary central nervous system tumor.
 
 Robust, and rigorous evaluation of segmentation algorithms across these diverse tasks is essential to accurately gauge clinical applicability and algorithmic performance.
+
+> Note: This package provides the official implementation of the evaluation metrics for the above [BraTS segmentation challenges](https://challenges.synapse.org/brats2026).
+> For the BraTS inpainting challenge, a [separate evaluation package](https://github.com/BraTS-inpainting/inpainting) is available.
 
 ---
 
