@@ -23,7 +23,7 @@ def main() -> None:
     pred_files = list(pred_dir.glob("*.nii.gz"))
 
     for ref_file in sorted(ref_dir.glob("*.nii.gz")):
-        match = re.search(r"(\d{5}-\d{3})", ref_file.name)
+        match = re.search(r"(\d{5}(?:-\d{3})?)", ref_file.name)
         if not match:
             continue
         suffix = f"{match.group(1)}.nii.gz"
