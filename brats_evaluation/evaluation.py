@@ -136,12 +136,12 @@ def main():
     print(f"Starting evaluation for {len(reference_files)} subjects...")
 
     # 4. Iterate and Evaluate Each Subject
+    subject_id_pattern = re.compile(r"(\d{4,5}(?:-\d{1,3})?)")  # Matches 4-5 digits, optionally followed by a dash and 1-3 digits
     for i, ref_filename in enumerate(reference_files):
         # Construct full paths
         reference_filepath = os.path.join(args.ref_path, ref_filename)
 
-        # Extract the 4,5-digit case ID (and 3-digit timepoint, if available)
-        match = re.search(r"(\d{4,5}(?:-\d{1,3})?)", ref_filename)
+        match = subject_id_pattern.search(ref_filename)
         if not match:
             print(
                 "Warning: Could not extract subject ID (e.g. 12345-000, 12345, 1234-0) "
