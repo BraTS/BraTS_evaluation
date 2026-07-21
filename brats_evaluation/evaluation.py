@@ -141,10 +141,10 @@ def main():
         reference_filepath = os.path.join(args.ref_path, ref_filename)
 
         # Extract the 5-digit case ID (and 3-digit timepoint, if available)
-        match = re.search(r"(\d{5}(?:-\d{3})?)", ref_filename)
+        match = re.search(r"(\d{4,5}(?:-\d{3})?)", ref_filename)
         if not match:
             print(
-                "Warning: Could not extract subject ID (e.g. 12345 or 12345-001) "
+                "Warning: Could not extract subject ID (e.g. 12345 or 12345-001 or 1234-001) "
                 f"from {ref_filename}. Skipping."
             )
             all_evaluation_results["missings"].append(ref_filename)
