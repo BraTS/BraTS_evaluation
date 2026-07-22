@@ -144,8 +144,8 @@ def main():
         match = subject_id_pattern.search(ref_filename)
         if not match:
             print(
-                "Warning: Could not extract subject ID (e.g. 12345-000, 12345, 1234-0) "
-                f"from {ref_filename}. Skipping."
+                "Warning: Could not extract subject ID (e.g. 12345-000, 12345, 1234-0, "
+                f"1234-000) from {ref_filename}. Skipping."
             )
             all_evaluation_results["missings"].append(ref_filename)
             continue
