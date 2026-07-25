@@ -68,6 +68,8 @@ def parse_seg_results(json_path, output_csv_path):
             subject_row_data[f"all_instance_tp_{key}"] = region_data.get("tp", np.nan)
             subject_row_data[f"all_instance_fp_{key}"] = region_data.get("fp", np.nan)
             subject_row_data[f"all_instance_fn_{key}"] = region_data.get("fn", np.nan)
+            subject_row_data[f"all_instance_prec_{key}"] = region_data.get("prec", np.nan)
+            subject_row_data[f"all_instance_rec_{key}"] = region_data.get("rec", np.nan)
             subject_row_data[f"all_instance_f1_{key}"] = region_data.get("rq", np.nan)
 
             # Global segmentation metrics
@@ -77,6 +79,13 @@ def parse_seg_results(json_path, output_csv_path):
             if global_hd95 is not None and np.isinf(global_hd95):
                 global_hd95 = 373 # diameter of the cube in SRI space; using the maximum penalty instead of INF.
             subject_row_data[f"global_hd95_{key}"] = global_hd95
+
+            subject_row_data[f"lesionwise_dsc_mean_{key}"] = region_data.get("sq_dsc", np.nan)
+            subject_row_data[f"lesionwise_dsc_std_{key}"] = region_data.get("sq_dsc_std", np.nan)
+            subject_row_data[f"lesionwise_nsd_mean_{key}"] = region_data.get("sq_nsd", np.nan)
+            subject_row_data[f"lesionwise_nsd_std_{key}"] = region_data.get("sq_nsd_std", np.nan)
+            subject_row_data[f"lesionwise_hd95_mean_{key}"] = region_data.get("sq_hd95", np.nan)
+            subject_row_data[f"lesionwise_hd95_std_{key}"] = region_data.get("sq_hd95_std", np.nan)
 
         final_data_rows.append(subject_row_data)
 
@@ -131,6 +140,8 @@ def parse_mets_results(json_path, vol_threshold, overlap_threshold, output_csv_p
             subject_row_data[f"all_instance_tp_{key}"] = metric_average.get("tp", np.nan)
             subject_row_data[f"all_instance_fp_{key}"] = metric_average.get("fp", np.nan)
             subject_row_data[f"all_instance_fn_{key}"] = metric_average.get("fn", np.nan)
+            subject_row_data[f"all_instance_prec_{key}"] = metric_average.get("prec", np.nan)
+            subject_row_data[f"all_instance_rec_{key}"] = metric_average.get("rec", np.nan)
             subject_row_data[f"all_instance_f1_{key}"] = metric_average.get("rq", np.nan)
 
             for lesion_data in lesion_instances:
@@ -179,9 +190,13 @@ def parse_mets_results(json_path, vol_threshold, overlap_threshold, output_csv_p
             large_lesion_fp = num_fp
             large_denominator = (2 * large_lesion_detection_tp) + large_lesion_fp + large_lesion_detection_fn
             large_f1 = (2 * large_lesion_detection_tp) / large_denominator if large_denominator > 0 else 0
+            large_prc = large_lesion_detection_tp / (large_lesion_detection_tp + large_lesion_fp) if (large_lesion_detection_tp + large_lesion_fp) > 0 else 0
+            large_rec = large_lesion_detection_tp / (large_lesion_detection_tp + large_lesion_detection_fn) if (large_lesion_detection_tp + large_lesion_detection_fn) > 0 else 0
             subject_row_data[f"large_instance_tp_{key}"] = large_lesion_detection_tp
             subject_row_data[f"large_instance_fp_{key}"] = large_lesion_fp
             subject_row_data[f"large_instance_fn_{key}"] = large_lesion_detection_fn
+            subject_row_data[f"large_instance_prec_{key}"] = large_prc
+            subject_row_data[f"large_instance_rec_{key}"] = large_rec
             subject_row_data[f"large_instance_f1_{key}"] = large_f1
 
             if n_ref_instances == 0 or not large_lesions_present:
@@ -204,13 +219,25 @@ def parse_mets_results(json_path, vol_threshold, overlap_threshold, output_csv_p
                 subject_row_data[f"small_instance_tp_{key}"] = detection_tp
                 subject_row_data[f"small_instance_fn_{key}"] = detection_fn
                 subject_row_data[f"small_instance_fp_{key}"] = num_fp
+                subject_row_data[f"small_instance_prec_{key}"] = detection_tp / (detection_tp + num_fp) if (detection_tp + num_fp) > 0 else 0
+                subject_row_data[f"small_instance_rec_{key}"] = detection_tp / (detection_tp + detection_fn) if (detection_tp + detection_fn) > 0 else 0
                 denominator = (2 * detection_tp) + num_fp + detection_fn
                 subject_row_data[f"small_instance_f1_{key}"] = (2 * detection_tp) / denominator if denominator > 0 else 0
             else:
                 subject_row_data[f"small_instance_tp_{key}"] = np.nan
                 subject_row_data[f"small_instance_fn_{key}"] = np.nan
                 subject_row_data[f"small_instance_fp_{key}"] = np.nan
+                subject_row_data[f"small_instance_prec_{key}"] = np.nan
+                subject_row_data[f"small_instance_rec_{key}"] = np.nan
                 subject_row_data[f"small_instance_f1_{key}"] = np.nan
+
+            # Global segmentation metrics
+            subject_row_data[f"global_dsc_{key}"] = region_data.get("global_bin_dsc", np.nan)
+            subject_row_data[f"global_nsd_{key}"] = region_data.get("global_bin_nsd", np.nan)
+            global_hd95 = region_data.get("global_bin_hd95")
+            if global_hd95 is not None and np.isinf(global_hd95):
+                global_hd95 = 373 # diameter of the cube in SRI space; using the maximum penalty instead of INF.
+            subject_row_data[f"global_hd95_{key}"] = global_hd95
 
         final_data_rows.append(subject_row_data)
 
