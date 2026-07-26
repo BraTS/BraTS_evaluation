@@ -187,17 +187,29 @@ def parse_mets_results(json_path, vol_threshold, overlap_threshold, output_csv_p
                 large_lesion_nsd.extend([0] * num_fp)
                 large_lesion_hd95.extend([373] * num_fp) # 373 diameter of the cube in SRI space; using the maximum penalty instead of INF.
 
-            large_lesion_fp = num_fp
-            large_denominator = (2 * large_lesion_detection_tp) + large_lesion_fp + large_lesion_detection_fn
-            large_f1 = (2 * large_lesion_detection_tp) / large_denominator if large_denominator > 0 else 0
-            large_prc = large_lesion_detection_tp / (large_lesion_detection_tp + large_lesion_fp) if (large_lesion_detection_tp + large_lesion_fp) > 0 else 0
-            large_rec = large_lesion_detection_tp / (large_lesion_detection_tp + large_lesion_detection_fn) if (large_lesion_detection_tp + large_lesion_detection_fn) > 0 else 0
-            subject_row_data[f"large_instance_tp_{key}"] = large_lesion_detection_tp
-            subject_row_data[f"large_instance_fp_{key}"] = large_lesion_fp
-            subject_row_data[f"large_instance_fn_{key}"] = large_lesion_detection_fn
-            subject_row_data[f"large_instance_prec_{key}"] = large_prc
-            subject_row_data[f"large_instance_rec_{key}"] = large_rec
-            subject_row_data[f"large_instance_f1_{key}"] = large_f1
+            if large_lesions_present:
+                large_lesion_fp = num_fp
+                large_denominator = (2 * large_lesion_detection_tp) + large_lesion_fp + large_lesion_detection_fn
+                large_f1 = (2 * large_lesion_detection_tp) / large_denominator if large_denominator > 0 else 0
+                large_prc = large_lesion_detection_tp / (large_lesion_detection_tp + large_lesion_fp) if (
+                                                                                                                     large_lesion_detection_tp + large_lesion_fp) > 0 else 0
+                large_rec = large_lesion_detection_tp / (large_lesion_detection_tp + large_lesion_detection_fn) if (
+                                                                                                                               large_lesion_detection_tp + large_lesion_detection_fn) > 0 else 0
+
+                subject_row_data[f"large_instance_tp_{key}"] = large_lesion_detection_tp
+                subject_row_data[f"large_instance_fp_{key}"] = large_lesion_fp
+                subject_row_data[f"large_instance_fn_{key}"] = large_lesion_detection_fn
+                subject_row_data[f"large_instance_prec_{key}"] = large_prc
+                subject_row_data[f"large_instance_rec_{key}"] = large_rec
+                subject_row_data[f"large_instance_f1_{key}"] = large_f1
+            else:
+                subject_row_data[f"large_instance_tp_{key}"] = np.nan
+                subject_row_data[f"large_instance_fp_{key}"] = np.nan
+                subject_row_data[f"large_instance_fn_{key}"] = np.nan
+                subject_row_data[f"large_instance_prec_{key}"] = np.nan
+                subject_row_data[f"large_instance_rec_{key}"] = np.nan
+                subject_row_data[f"large_instance_f1_{key}"] = np.nan
+
 
             if n_ref_instances == 0 or not large_lesions_present:
                 subject_row_data[f"lesionwise_dsc_mean_{key}"] = np.nan
