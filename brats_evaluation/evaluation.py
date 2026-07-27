@@ -136,16 +136,18 @@ def main():
     print(f"Starting evaluation for {len(reference_files)} subjects...")
 
     # 4. Iterate and Evaluate Each Subject
+
+    # Expected pattern: 5 digits (optionally followed by - and 3 digits) or 4 digits followed by - and 1-3 digits
+    subject_id_pattern = re.compile(r"(\d{5}(?:-\d{3})?|\d{4}-\d{1,3})")
     for i, ref_filename in enumerate(reference_files):
         # Construct full paths
         reference_filepath = os.path.join(args.ref_path, ref_filename)
 
-        # Extract the 5-digit case ID (and 3-digit timepoint, if available)
-        match = re.search(r"(\d{5}(?:-\d{3})?)", ref_filename)
+        match = subject_id_pattern.search(ref_filename)
         if not match:
             print(
-                "Warning: Could not extract subject ID (e.g. 12345 or 12345-001) "
-                f"from {ref_filename}. Skipping."
+                "Warning: Could not extract subject ID (e.g. 12345-000, 12345, 1234-0, "
+                f"1234-000) from {ref_filename}. Skipping."
             )
             all_evaluation_results["missings"].append(ref_filename)
             continue
