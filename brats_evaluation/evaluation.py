@@ -136,7 +136,7 @@ def main():
     print(f"Starting evaluation for {len(reference_files)} subjects...")
 
     # 4. Iterate and Evaluate Each Subject
-    subject_id_pattern = re.compile(r"(\d{4,5}(?:-\d{1,3})?)")  # Matches 4-5 digits, optionally followed by a dash and 1-3 digits
+subject_id_pattern = re.compile(r"(\d{5}(?:-\d{3})?|\d{4}-\d{1,3})")  # Matches 5 digits (optionally followed by - and 3 digits) or 4 digits followed by - and 1-3 digits
     for i, ref_filename in enumerate(reference_files):
         # Construct full paths
         reference_filepath = os.path.join(args.ref_path, ref_filename)
