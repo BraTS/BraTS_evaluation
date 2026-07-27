@@ -21,7 +21,7 @@ def main() -> None:
 
     evaluator = Panoptica_Evaluator.load_from_config(str(config_path("mets")))
     pred_files = list(pred_dir.glob("*.nii.gz"))
-    subject_id_pattern = re.compile(r"(\d{4,5}(?:-\d{1,3})?)")
+    subject_id_pattern = re.compile(r"(\d{5}(?:-\d{3})?|\d{4}-\d{1,3})")
 
     for ref_file in sorted(ref_dir.glob("*.nii.gz")):
         match = subject_id_pattern.search(ref_file.name)
