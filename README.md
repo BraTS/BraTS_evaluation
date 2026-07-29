@@ -97,6 +97,12 @@ brats-parse-metrics mets \
 *   `--vol_threshold`: Volume threshold to differentiate between large and small lesions (e.g., 20.0 voxels/mm3 depending on your config).
 *   `--overlap_threshold`: Dice score threshold to classify small lesions as True Positive (TP) or False Negative (FN).
 
+⚠️ Important Notice on False Positive (FP) Counts: Currently, size-specific tracking of False Positives 
+(differentiating between FPs for small vs. large lesions) is pending an upstream update from the Panoptica 
+library. Once Panoptica exposes instance-level volume data for unmatched predictions, 
+this evaluation package will be updated to accurately distribute FP metrics across the corresponding 
+size categories.
+
 ### Python library
 
 Call the evaluator directly from your own Python code:

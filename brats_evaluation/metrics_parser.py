@@ -17,7 +17,6 @@ def _calculate_mean_std_median(df):
 
     return pd.concat([df, pd.DataFrame([mean_row, std_row, median_row])], ignore_index=True)
 
-
 def _handle_missing_data(data, final_data_rows):
     """Fills in default values for missing subjects."""
     missing_data = data.get("missings", [])
@@ -29,13 +28,13 @@ def _handle_missing_data(data, final_data_rows):
         for missing_subject in missing_data:
             missing_row = {"subject_id": missing_subject}
             for key in keys_to_fill:
-                if "hd95" in key:
-                    missing_row[key] = 373 # diameter of the cube in SRI space; using the maximum penalty instead of INF.
+                # Apply the 373 penalty ONLY to mean/global HD95, not standard deviations
+                if "hd95" in key and "std" not in key:
+                    missing_row[key] = 373 # diameter of the cube in SRI space
                 else:
-                    missing_row[key] = 0
+                    missing_row[key] = 0 # 0 makes sense for missing std deviations and other metrics
             final_data_rows.append(missing_row)
     return final_data_rows
-
 
 def parse_seg_results(json_path, output_csv_path):
     """
